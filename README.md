@@ -3,7 +3,7 @@
 This .dll holds the implementation of a delegate based input manager for use with the Unity game engine. Essentially, it serves as a delegate interface for an XInput wrapper created by [Rémi Gillig](https://github.com/speps/XInputDotNet). This release has been created to aid student developers at DigiPen.
 
 ## Setup
-- Get the latest release of the InputManagerModule from [the release page](/Releases)
+- Get the latest release of the InputManagerModule from [the release page](https://github.com/jeremymccarty/InputManagerModule/releases/latest)
 - Open Unity
 - Import the package by selecting Assets > Import Package > Custom Package
 - Attach the InputManager component to any actor needing gamepad input
