@@ -20,5 +20,5 @@ Examples can be found in the SampleScript.cs file that is generated on Import.
   - You have to copy this one next to your .exe
 
 ## Additional Resources
-This project was made possible with the XInputDotNet wrapper from Rémi Gillig [which can be found here](https://github.com/speps/XInputDotNet).
-For hardware support for Sony Playstation gamepads, I recommend using [DS4Windows](http://ds4windows.com/).
+- This project was made possible with the XInputDotNet wrapper from Rémi Gillig [which can be found here](https://github.com/speps/XInputDotNet).
+- For hardware support for Sony Playstation gamepads, I recommend using [DS4Windows](http://ds4windows.com/).
