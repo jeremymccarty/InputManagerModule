@@ -1,0 +1,6 @@
+D:\Dropbox\Work\TA\GAT250\InputManagerModule\obj\Debug\InputManagerModule.csprojResolveAssemblyReference.cache
+D:\Dropbox\Work\TA\GAT250\InputManagerModule\bin\Debug\InputManagerModule.dll
+D:\Dropbox\Work\TA\GAT250\InputManagerModule\bin\Debug\InputManagerModule.pdb
+D:\Dropbox\Work\TA\GAT250\InputManagerModule\bin\Debug\UnityEngine.xml
+D:\Dropbox\Work\TA\GAT250\InputManagerModule\obj\Debug\InputManagerModule.dll
+D:\Dropbox\Work\TA\GAT250\InputManagerModule\obj\Debug\InputManagerModule.pdb
