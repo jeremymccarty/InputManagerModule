@@ -24,6 +24,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using XInputDotNetPure;
 
@@ -150,7 +151,6 @@ namespace InputManagerModule
         #endregion
 
         /* Public variables */
-        public PlayerIndex PlayerIndex;
         public bool LoadedByDefault = true;
 
         /* State bools */
@@ -164,49 +164,58 @@ namespace InputManagerModule
         private bool _leftShoulderPressed;
         private bool _homePressed;
         private bool _isRumbling;
-        private bool _inputActive;
+        private static bool[] _rumblingStates = new bool[4];
+        private static bool[] _activeStates = new bool[4];
 
         // Use this for initialization
         void Start()
         {
-            // Initialize the state of this controller
-            _inputActive = LoadedByDefault;
+            // Initialize the active state of each controller
+            for (int i = 0; i < 4; ++i)
+                _activeStates[i] = LoadedByDefault;
         }
 
         // Update is called once per frame
         void Update()
         {
-            // If this gamepad isn't active, return
-            if (!_inputActive)
-                return;
+            // For each CONNECTED controller
+            for (int i = 0; i < 4; ++i)
+            {
+                // Save the current controller
+                PlayerIndex currentIndex = (PlayerIndex)i;
 
-            // Save our current state
-            GamePadState state = GamePad.GetState(PlayerIndex);
-            GamePadButtons button = state.Buttons;
+                // Verify that the controller is connected and active
+                if (!GamePad.GetState(currentIndex).IsConnected || !_activeStates[i])
+                    continue;
 
-            // Check for pressed buttons
-            EvaluateButtonPresses(button);
+                // Save our current state
+                GamePadState state = GamePad.GetState(currentIndex);
+                GamePadButtons button = state.Buttons;
 
-            // Check for axis inputs (triggers, joysticks, dpad)
-            EvaluateAxisInput(state);
+                // Check for pressed buttons
+                EvaluateButtonPresses(currentIndex, button);
 
-            // Check for released buttons
-            EvaluateButtonReleases(button);
+                // Check for axis inputs (triggers, joysticks, dpad)
+                EvaluateAxisInput(currentIndex, state);
+
+                // Check for released buttons
+                EvaluateButtonReleases(currentIndex, button);
+            }
         }
 
         // Evaluate the current value of each axis input and call the delegates
-        private void EvaluateAxisInput(GamePadState state)
+        private void EvaluateAxisInput(PlayerIndex currentIndex, GamePadState state)
         {
             // Process input for trigger buttons
             #region Right Trigger
 
-            OnRightTriggerPressed?.Invoke(PlayerIndex, state.Triggers.Right);
+            OnRightTriggerPressed?.Invoke(currentIndex, state.Triggers.Right);
 
             #endregion
 
             #region Left Trigger
 
-            OnLeftTriggerPressed?.Invoke(PlayerIndex, state.Triggers.Left);
+            OnLeftTriggerPressed?.Invoke(currentIndex, state.Triggers.Left);
 
             #endregion
 
@@ -214,14 +223,14 @@ namespace InputManagerModule
             #region Joystick Right
 
             Vector2 axisValue = new Vector2(state.ThumbSticks.Right.X, state.ThumbSticks.Right.Y);
-            OnRightJoystickMove?.Invoke(PlayerIndex, axisValue);
+            OnRightJoystickMove?.Invoke(currentIndex, axisValue);
 
             #endregion
 
             #region Joystick Left
 
             axisValue = new Vector2(state.ThumbSticks.Left.X, state.ThumbSticks.Left.Y);
-            OnLeftJoystickMove?.Invoke(PlayerIndex, axisValue);
+            OnLeftJoystickMove?.Invoke(currentIndex, axisValue);
 
             #endregion
 
@@ -240,23 +249,23 @@ namespace InputManagerModule
             if (state.DPad.Down == ButtonState.Pressed)
                 axisValue.y = -1;
 
-            OnDpadMove?.Invoke(PlayerIndex, axisValue);
+            OnDpadMove?.Invoke(currentIndex, axisValue);
 
             #endregion
         }
 
         // Calls the assigned delegates when the input buttons are pressed
-        private void EvaluateButtonPresses(GamePadButtons button)
+        private void EvaluateButtonPresses(PlayerIndex currentIndex, GamePadButtons button)
         {
             // Process input for face buttons
             #region Face Down
 
             if (button.A == ButtonState.Pressed)
             {
-                OnFaceDownHeld?.Invoke(PlayerIndex);
+                OnFaceDownHeld?.Invoke(currentIndex);
 
                 if (!_faceDownPressed)
-                    OnFaceDownPressed?.Invoke(PlayerIndex);
+                    OnFaceDownPressed?.Invoke(currentIndex);
 
                 _faceDownPressed = true;
             }
@@ -267,10 +276,10 @@ namespace InputManagerModule
 
             if (button.X == ButtonState.Pressed)
             {
-                OnFaceLeftHeld?.Invoke(PlayerIndex);
+                OnFaceLeftHeld?.Invoke(currentIndex);
 
                 if (!_faceLeftPressed)
-                    OnFaceLeftPressed?.Invoke(PlayerIndex);
+                    OnFaceLeftPressed?.Invoke(currentIndex);
 
                 _faceLeftPressed = true;
             }
@@ -281,10 +290,10 @@ namespace InputManagerModule
 
             if (button.Y == ButtonState.Pressed)
             {
-                OnFaceUpHeld?.Invoke(PlayerIndex);
+                OnFaceUpHeld?.Invoke(currentIndex);
 
                 if (!_faceUpPressed)
-                    OnFaceUpPressed?.Invoke(PlayerIndex);
+                    OnFaceUpPressed?.Invoke(currentIndex);
 
                 _faceUpPressed = true;
             }
@@ -295,10 +304,10 @@ namespace InputManagerModule
 
             if (button.B == ButtonState.Pressed)
             {
-                OnFaceRightHeld?.Invoke(PlayerIndex);
+                OnFaceRightHeld?.Invoke(currentIndex);
 
                 if (!_faceRightPressed)
-                    OnFaceRightPressed?.Invoke(PlayerIndex);
+                    OnFaceRightPressed?.Invoke(currentIndex);
 
                 _faceRightPressed = true;
             }
@@ -310,10 +319,10 @@ namespace InputManagerModule
 
             if (button.Back == ButtonState.Pressed)
             {
-                OnSpecialLeftHeld?.Invoke(PlayerIndex);
+                OnSpecialLeftHeld?.Invoke(currentIndex);
 
                 if (!_specialLeftPressed)
-                    OnSpecialLeftPressed?.Invoke(PlayerIndex);
+                    OnSpecialLeftPressed?.Invoke(currentIndex);
 
                 _specialLeftPressed = true;
             }
@@ -324,10 +333,10 @@ namespace InputManagerModule
 
             if (button.Start == ButtonState.Pressed)
             {
-                OnSpecialRightHeld?.Invoke(PlayerIndex);
+                OnSpecialRightHeld?.Invoke(currentIndex);
 
                 if (!_specialRightPressed)
-                    OnSpecialRightPressed?.Invoke(PlayerIndex);
+                    OnSpecialRightPressed?.Invoke(currentIndex);
 
                 _specialRightPressed = true;
             }
@@ -339,10 +348,10 @@ namespace InputManagerModule
 
             if (button.RightShoulder == ButtonState.Pressed)
             {
-                OnRightShoulderHeld?.Invoke(PlayerIndex);
+                OnRightShoulderHeld?.Invoke(currentIndex);
 
                 if (!_rightShoulderPressed)
-                    OnRightShoulderPressed?.Invoke(PlayerIndex);
+                    OnRightShoulderPressed?.Invoke(currentIndex);
 
                 _rightShoulderPressed = true;
             }
@@ -353,10 +362,10 @@ namespace InputManagerModule
 
             if (button.LeftShoulder == ButtonState.Pressed)
             {
-                OnLeftShoulderHeld?.Invoke(PlayerIndex);
+                OnLeftShoulderHeld?.Invoke(currentIndex);
 
                 if (!_leftShoulderPressed)
-                    OnLeftShoulderPressed?.Invoke(PlayerIndex);
+                    OnLeftShoulderPressed?.Invoke(currentIndex);
 
                 _leftShoulderPressed = true;
             }
@@ -367,10 +376,10 @@ namespace InputManagerModule
             #region Home
             if (button.Guide == ButtonState.Pressed)
             {
-                OnHomeHeld?.Invoke(PlayerIndex);
+                OnHomeHeld?.Invoke(currentIndex);
 
                 if (!_homePressed)
-                    OnHomePressed?.Invoke(PlayerIndex);
+                    OnHomePressed?.Invoke(currentIndex);
 
                 _homePressed = true;
             }
@@ -378,14 +387,14 @@ namespace InputManagerModule
         }
 
         // Calls the assigned delegates when the input buttons are released
-        private void EvaluateButtonReleases(GamePadButtons button)
+        private void EvaluateButtonReleases(PlayerIndex currentIndex, GamePadButtons button)
         {
             // Process input for face buttons
             #region Face Down
 
             if (button.A == ButtonState.Released && _faceDownPressed)
             {
-                OnFaceDownReleased?.Invoke(PlayerIndex);
+                OnFaceDownReleased?.Invoke(currentIndex);
                 _faceDownPressed = false;
             }
 
@@ -395,7 +404,7 @@ namespace InputManagerModule
 
             if (button.X == ButtonState.Released && _faceLeftPressed)
             {
-                OnFaceLeftReleased?.Invoke(PlayerIndex);
+                OnFaceLeftReleased?.Invoke(currentIndex);
                 _faceLeftPressed = false;
             }
 
@@ -405,7 +414,7 @@ namespace InputManagerModule
 
             if (button.Y == ButtonState.Released && _faceUpPressed)
             {
-                OnFaceUpReleased?.Invoke(PlayerIndex);
+                OnFaceUpReleased?.Invoke(currentIndex);
                 _faceUpPressed = false;
             }
 
@@ -415,7 +424,7 @@ namespace InputManagerModule
 
             if (button.B == ButtonState.Released && _faceRightPressed)
             {
-                OnFaceRightReleased?.Invoke(PlayerIndex);
+                OnFaceRightReleased?.Invoke(currentIndex);
                 _faceRightPressed = false;
             }
 
@@ -426,7 +435,7 @@ namespace InputManagerModule
 
             if (button.Back == ButtonState.Released && _specialLeftPressed)
             {
-                OnSpecialLeftReleased?.Invoke(PlayerIndex);
+                OnSpecialLeftReleased?.Invoke(currentIndex);
                 _specialLeftPressed = false;
             }
 
@@ -436,7 +445,7 @@ namespace InputManagerModule
 
             if (button.Start == ButtonState.Released && _specialRightPressed)
             {
-                OnSpecialRightReleased?.Invoke(PlayerIndex);
+                OnSpecialRightReleased?.Invoke(currentIndex);
                 _specialRightPressed = false;
             }
 
@@ -447,7 +456,7 @@ namespace InputManagerModule
 
             if (button.RightShoulder == ButtonState.Released && _rightShoulderPressed)
             {
-                OnRightShoulderReleased?.Invoke(PlayerIndex);
+                OnRightShoulderReleased?.Invoke(currentIndex);
                 _rightShoulderPressed = false;
             }
 
@@ -457,7 +466,7 @@ namespace InputManagerModule
 
             if (button.LeftShoulder == ButtonState.Released && _leftShoulderPressed)
             {
-                OnLeftShoulderReleased?.Invoke(PlayerIndex);
+                OnLeftShoulderReleased?.Invoke(currentIndex);
                 _leftShoulderPressed = false;
             }
 
@@ -467,34 +476,34 @@ namespace InputManagerModule
             #region Home
             if (button.Guide == ButtonState.Released && _homePressed)
             {
-                OnHomeReleased?.Invoke(PlayerIndex);
+                OnHomeReleased?.Invoke(currentIndex);
                 _homePressed = false;
             }
             #endregion
         }
 
         // Rumble for t time at the given strength of each motor (defaults to 1)
-        public IEnumerator Rumble(float time, float leftMotor = 1, float rightMotor = 1)
+        public static IEnumerator Rumble(PlayerIndex index, float time, float leftMotor = 1, float rightMotor = 1)
         {
             // If we are rumbling, return
-            if (_isRumbling) yield return null;
+            if (_rumblingStates[(int)index]) yield return null;
 
             // Otherwise, set rumbling on
-            _isRumbling = true;
+            _rumblingStates[(int)index] = true;
 
-            // Set vibration and wait for t time
-            GamePad.SetVibration(PlayerIndex, leftMotor, rightMotor);
+            GamePad.SetVibration(index, leftMotor, rightMotor);
             yield return new WaitForSecondsRealtime(time);
 
             // Reset rumbling when complete
-            _isRumbling = false;
-            GamePad.SetVibration(PlayerIndex, 0, 0);
+            _rumblingStates[(int)index] = false;
+            GamePad.SetVibration(index, 0, 0);
         }
 
         // Allows users to activate and deactivate the controllers
-        public void SetInputActive(bool activeValue)
+        public static void SetInputActive(PlayerIndex index, bool activeValue)
         {
-            _inputActive = activeValue;
+            // Find the controller in the array and set it's state
+            _activeStates[(int)index] = activeValue;
         }
     }
 }
