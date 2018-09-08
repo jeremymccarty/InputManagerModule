@@ -34,3 +34,6 @@ Examples can be found in the SampleScript.cs and PlayerController.cs files that 
 ## Additional Resources
 - This project was made possible with the XInputDotNet wrapper from Rémi Gillig [which can be found here](https://github.com/speps/XInputDotNet).
 - For hardware support for Sony Playstation gamepads, I recommend using [DS4Windows](http://ds4windows.com/).
+
+## Credit
+Use "Input Manager Module Copyright (c) 2018 Jeremy McCarty All Rights Reserved" in your credits
